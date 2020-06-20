@@ -3,12 +3,13 @@
 @include fontface(Akzidenz Grotesk Pro, Akzidenz-Grotesk Pro Medium, AkzidenzGroteskPro-MdEx, 500, normal);
 @include fontface(Akzidenz Grotesk Pro, Akzidenz-Grotesk Pro Bold, AkzidenzGroteskPro-BoldEx, 700, normal);
 @include fontface(Gilroy, Gilroy Regular, Gilroy-Regular, 400, normal);
+@include fontface(Gilroy, Gilroy Medium, Gilroy-Medium, 500, normal);
 @include fontface(Gilroy, Gilroy Bold, Gilroy-Bold, 700, normal);
 
 html {
     font-family: $Default;
-    font-size: 14px;
-    line-height: 1.4;
+    font-size: 16px;
+    line-height: 1.15;
     color: $color_black;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
@@ -53,7 +54,7 @@ body {
 }
 
 a {
-    text-decoration: none;
+    //text-decoration: none;
     color: inherit;
     transition: color 0.5s $mainEaseing, border 0.5s $mainEaseing, background 0.5s $mainEaseing, opacity 0.5s $mainEaseing;
 }
@@ -178,6 +179,7 @@ button {
             font-family: $Akzidenz;
             font-size: 3.267vw;
             line-height: 4.2vw;
+            font-weight: 500;
             color: #fff;
         }
 

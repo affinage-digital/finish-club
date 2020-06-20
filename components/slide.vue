@@ -1,11 +1,10 @@
 <template>
     <div class="slide-container" :class="'slide-' + newIndex">
-        <a class="agreement-doc" target="_blank" href="/finish-club_web-site_cookies_policy.docx">политика по использованию файлов cookies</a>
+        <a class="agreement-doc" target="_blank" href="/finish-club_web-site_cookies_policy.docx">{{ $t('policy') }}</a>
 
         <div class="slide">
-            <!-- {newIndex !== 0 && (
-                <Projector projector={content[slideIndex].projector} />
-            )} -->
+            <projector v-if="newIndex !== 0" :projector="content.projector" />
+
             <div class="slide-bg"></div>
             <div class="slide-text-container">
                 <div class="text-1" v-html="content.text_1"></div>
@@ -15,59 +14,56 @@
             <div v-if="content.image" class="slide-image-container"
                 :style="{'background-image': 'url(' + content.image + ')'}"></div>
 
-          <!-- {newIndex === 5 && (
-            <div className="slide-image-container">
-              <div className="slide-image-container__title">Расход воды</div>
-              <div className="slide-image-container__first">
-                <div className="slide-image-container__icon">
-                  <img src={require("../../assets/images/kran.png")} />
+            <div v-if="newIndex === 5" class="slide-image-container">
+                <div class="slide-image-container__title" v-html="$t('slide5.title')"></div>
+                <div class="slide-image-container__first">
+                    <div class="slide-image-container__icon">
+                        <img src="/img/kran.png" />
+                    </div>
+                    <div class="slide-image-container__litrs">
+                        <img src="/img/160-litr.png" />
+                    </div>
+                    <div class="slide-image-container__text" v-html="$t('slide5.desc1')"></div>
                 </div>
-                <div className="slide-image-container__litrs">
-                  <img src={require("../../assets/images/160-litr.png")} />
+                <div class="slide-image-container__second">
+                    <div class="slide-image-container__icon">
+                        <img src="/img/machine-img.png" />
+                    </div>
+                    <div class="slide-image-container__litrs">
+                        <img src="/img/12-litr.png" />
+                    </div>
+                    <div class="slide-image-container__text" v-html="$t('slide5.desc2')"></div>
                 </div>
-                <div className="slide-image-container__text">
-                  при мытье посуды
-                  <br /> руками
-                </div>
-              </div>
-              <div className="slide-image-container__second">
-                <div className="slide-image-container__icon">
-                  <img src={require("../../assets/images/machine-img.png")} />
-                </div>
-                <div className="slide-image-container__litrs">
-                  <img src={require("../../assets/images/12-litr.png")} />
-                </div>
-                <div className="slide-image-container__text">
-                  при мытье посуды в посудомоечной машине
-                </div>
-              </div>
             </div>
-          )}
-          <div className="slider-button">
-            <BuyButton fakeIndex={newIndex} />
-          </div>
-          {content[slideIndex].disclimer && (
-            <div
-              className="disclimer"
-              dangerouslySetInnerHTML={{
-                __html: content[slideIndex].disclimer
-              }}
-            ></div>
-          )} -->
+
+            <div class="slider-button">
+                <buy-button :fakeIndex="newIndex" />
+            </div>
+
+            <div v-if="content.disclimer" class="disclimer" v-html="content.disclimer"></div>
         </div>
-        <!-- {newIndex !== 6 && (
-          <SlideCounter
-            slideIndex={this.props.slideIndex}
-            nextSlide={this.nextSlide}
-            prevSlide={this.prevSlide}
-            arrowsColor={this.props.content[this.props.slideIndex].arrows_color}
-          />
-        )} -->
-      </div>
+
+        <template v-if="newIndex !== 6">
+            <slide-counter
+                :slideIndex="slideIndex"
+                :arrowsColor="content.arrows_color"
+            />
+        </template>
+    </div>
 </template>
 
 <script>
+import BuyButton from '@/components/buy-button.vue';
+import Projector from '@/components/projector.vue';
+import SlideCounter from '@/components/slide-counter.vue';
+
 export default {
+    components: {
+        BuyButton,
+        Projector,
+        SlideCounter,
+    },
+
     props: {
         content: {
             type: Object,
@@ -82,6 +78,28 @@ export default {
             default: undefined,
         },
     },
+
+    i18n: {
+        messages: {
+            ru: {
+                policy: 'политика по использованию файлов cookies',
+                slide5: {
+                    title: 'Расход воды',
+                    desc1: 'при мытье посуды<br /> руками',
+                    desc2: 'при мытье посуды в посудомоечной машине',
+                }
+            },
+            az: {
+                policy: 'çerez siyasəti',
+                slide5: {
+                    title: 'Su istehlakı',
+                    desc1: 'əlləri ilə qab<br/> yuyarkən',
+                    desc2: 'qabyuyan maşında qab yuyarkən',
+                }
+            },
+        },
+    },
+
     computed: {
         newIndex() {
             let newIndex;
@@ -98,9 +116,6 @@ export default {
             return newIndex;
         },
     },
-    data: () => ({
-
-    }),
 };
 </script>
 
@@ -147,102 +162,6 @@ export default {
             width: auto;
             font-size: 8px;
             text-align: right;
-        }
-    }
-
-    .cookie-agreement {
-        position: fixed;
-        z-index: 9999;
-        top: 0;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 1vw 4.323vw;
-        background-color: rgba(0, 0, 0, 0.8);
-
-        &__container {
-            display: flex;
-            flex-direction: column;
-            width: 50vw;
-            padding: 3vw;
-            border-radius: 3vw;
-            background-color: #fff;
-
-            @media screen and (max-width: 750px) {
-                width: auto;
-                padding: 7vw 9vw;
-            }
-        }
-
-        &__text {
-            font-family: $Gilroy;
-            font-size: 1.7vw;
-            text-align: center;
-            color: #303030;
-
-            a {
-                color: #303030;
-            }
-
-            @media screen and (max-width: 750px) {
-                font-size: 3.7vw;
-            }
-        }
-
-        &__buttons {
-            display: flex;
-            justify-content: center;
-            margin-top: 2vw;
-
-            @media screen and (max-width: 750px) {
-                flex-direction: column;
-                margin-top: 6vw;
-            }
-        }
-
-        &__okey,
-        &__nope {
-            display: block;
-            height: 2.731vw;
-            padding: 1.056vw 2.425vw 0.122vw;
-            font-family: $Akzidenz;
-            font-size: 1.368vw;
-            font-weight: 300;
-            text-decoration: none;
-            text-align: center;
-            color: #fff;
-            border-radius: 2.799vw;
-            //background-color: transparent;
-            background: linear-gradient(45deg, #d21459 0%, #fb3c42 100%);
-            cursor: pointer;
-
-            @media screen and (max-width: 750px) {
-                height: 6vw;
-                padding: 3vw 5vw;
-                font-size: 4.368vw;
-                border-radius: 6.799vw;
-            }
-        }
-
-        &__nope {
-            color: #fb3c42;
-            border: 0.15vw solid #fb3c42;
-            background: none;
-            margin-left: 3vw;
-
-            @media screen and (max-width: 750px) {
-                margin-top: 3vw;
-                margin-left: 0;
-            }
-
-            &.active {
-                color: #fff;
-                border-color: transparent;
-                background: linear-gradient(45deg, #d21459 0%, #fb3c42 100%);
-            }
         }
     }
 
@@ -304,7 +223,7 @@ export default {
             font-family: $Akzidenz;
             font-size: 3.731vw;
             line-height: 3.856vw;
-            font-weight: 700;
+            font-weight: 500;
             color: hsl(175, 100%, 50%);
 
             @media screen and (min-width: 1920px) {
@@ -370,7 +289,7 @@ export default {
             border-radius: 50%;
             background-color: hsl(179, 100%, 55%);
             margin-right: 1.2vw;
-            margin-left: -1em;
+            margin-left: -1.175em;
         }
     }
 
@@ -430,7 +349,7 @@ export default {
             font-family: $Akzidenz;
             font-size: 3.731vw;
             line-height: 3.856vw;
-            font-weight: 700;
+            font-weight: 500;
             color: hsl(338, 92%, 36%);
 
             @media screen and (min-width: 1920px) {
@@ -527,7 +446,7 @@ export default {
             font-family: $Akzidenz;
             font-size: 3.731vw;
             line-height: 3.856vw;
-            font-weight: 700;
+            font-weight: 500;
             color: hsl(338, 92%, 36%);
 
             @media screen and (min-width: 1920px) {
@@ -624,7 +543,7 @@ export default {
             font-family: $Akzidenz;
             font-size: 3.731vw;
             line-height: 3.856vw;
-            font-weight: 700;
+            font-weight: 500;
             color: hsl(160, 100%, 17%);
 
             @media screen and (min-width: 1920px) {
@@ -721,7 +640,7 @@ export default {
             font-family: $Akzidenz;
             font-size: 3.731vw;
             line-height: 3.856vw;
-            font-weight: 700;
+            font-weight: 500;
             color: #c70ea2;
 
             @media screen and (min-width: 1920px) {
@@ -945,7 +864,7 @@ export default {
             font-family: $Gilroy;
             font-size: 2.331vw;
             line-height: 2.156vw;
-            font-weight: 700;
+            font-weight: 500;
             color: hsl(0, 0%, 100%);
 
             @media screen and (min-width: 750px) {

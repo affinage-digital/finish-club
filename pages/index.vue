@@ -1,12 +1,35 @@
 <template>
-    <div :style="{ height: windowHeight + 'px'}">
-        <slide v-show="i === slideIndex" v-for="(content, i) in $t('slides')" :key="i" :slideIndex="i" :content="content" />
-        <!-- nextSlide={this.nextSlide}
-            prevSlide={this.prevSlide}
-            content={this.props.data}
-            slideIndex={this.state.slideIndex}
-            fakeIndex={this.props.fakeIndex}
-            currentAnimationDeltaY={this.state.currentAnimationDeltaY} -->
+    <div ref="pageIndex" :style="{ height: windowHeight + 'px'}">
+        <div class="rotate-phone" :style="{ height: windowHeight + 'px'}">
+            <div class="text" v-html="$t('rotateDevice')"></div>
+            <div class="icon">
+                <svg enable-background="new 0 0 612 612" viewBox="0 0 612 612" xmlns="http://www.w3.org/2000/svg">
+                    <path d="m419.475 63.75c84.15 38.25 142.8 119.85 153 216.75h38.25c-15.3-158.1-145.35-280.5-306-280.5-5.1 0-10.2 0-17.85 0l96.9 96.9zm-160.65-20.4c-15.3-15.3-38.25-15.3-53.55 0l-163.2 163.2c-15.3 15.3-15.3 38.25 0 53.55l306 306c15.301 15.301 38.25 15.301 53.551 0l163.199-163.2c15.301-15.301 15.301-38.25 0-53.551zm117.3 497.25-306-306 163.2-163.2 306 306zm-186.15 7.65c-84.15-38.25-142.8-119.85-153-216.75h-35.7c12.75 158.1 142.8 280.5 303.45 280.5h17.85l-96.899-96.9z"/>
+                </svg>
+            </div>
+        </div>
+
+        <div v-if="agreement" class="cookie-agreement">
+            <div class="cookie-agreement__container">
+                <div v-if="!nopeClicked" class="cookie-agreement__text" v-html="$t('cookie.bigDesc')"></div>
+                <div v-else class="cookie-agreement__text" v-html="$t('cookie.repeatDesc')"></div>
+
+                <div class="cookie-agreement__buttons">
+                    <div class="cookie-agreement__okey" @click="agreement = false" v-html="$t('cookie.yes')"></div>
+                    <div class="cookie-agreement__nope" :class="{ active: nopeClicked }" @click="nopeClicked = true" v-html="$t('cookie.no')"></div>
+                </div>
+            </div>
+        </div>
+
+        <template v-if="loaded">
+            <slide v-show="i === slideIndex" v-for="(content, i) in $t('slides')" :key="i"
+                :content="content"
+                :slideIndex="i"
+                :fakeIndex="fakeIndex" />
+        </template>
+        <template v-else>
+            Loading…
+        </template>
     </div>
 </template>
 
@@ -21,6 +44,20 @@ export default {
     i18n: {
         messages: {
             ru: {
+                rotateDevice: 'Пожалуйста,<br /> переверните устройство',
+                cookie: {
+                    bigDesc: `Внимание! На данном сайте используются файлы «cookies».
+                        Подробное описание используемых cookies, а также
+                        информация о том, как вы можете их заблокировать,
+                        содержится в нашей <a href="/finish-club_web-site_cookies_policy.docx" download target="_blank">
+                        «Политике по использованию файлов cookies»</a>. Продолжая использовать сайт, вы соглашаетесь с
+                        установкой и использованием указанных файлов в соответствии с Политикой.`,
+                    repeatDesc: `Для того, чтобы просмотреть данный сайт, подтвердите свое
+                        согласие с <a href="/finish-club_web-site_cookies_policy.docx" download target="_blank">
+                        «Политикой по использованию файлов cookies»</a>.`,
+                    yes: 'согласен',
+                    no: 'не согласен'
+                },
                 slides: [
                     {
                         text_1: `Настольная<br/>
@@ -213,6 +250,8 @@ export default {
         windowHeight: '100vh',
         agreement: true,
         nopeClicked: false,
+        scrollReady: true,
+        startY: null, // для свайпа на мобилке
         utms: [
             "?utm_source=mytarget_beeline&utm_medium=olv&utm_term=time_saving&utm_content=moms_creative_1&utm_campaign=rb_finish_pip_oct_dec2019",
             "?utm_source=mytarget_beeline&utm_medium=olv&utm_term=time_saving&utm_content=moms_creative_2&utm_campaign=rb_finish_pip_oct_dec2019",
@@ -411,6 +450,44 @@ export default {
         this.utmFilter();
         this.updateDimensions();
         window.addEventListener('resize', this.updateDimensions);
+
+        this.$refs.pageIndex.addEventListener('wheel', event => {
+            if (!this.agreement) {
+                if (this.scrollReady) {
+                    this.scrollReady = false;
+
+                    if (event.deltaY > 0) {
+                        this.nextSlide();
+                    } else {
+                        this.prevSlide();
+                    }
+
+                    setTimeout(() => {
+                        this.scrollReady = true;
+                    }, 1000);
+                }
+
+            }
+        });
+
+        // swipe detected
+        this.$refs.pageIndex.addEventListener('touchstart', event => {
+            this.startY = (event.touches || event.originalEvent.touches)[0].clientY;
+        });
+
+        this.$refs.pageIndex.addEventListener('touchmove', event => {
+            if (!this.startY) return;
+
+            const yDelta = this.startY - (event.touches || event.originalEvent.touches)[0].clientY;
+
+            if (yDelta > 45) {
+                this.nextSlide();
+                this.startY = null;
+            } else if (yDelta < -45) {
+                this.prevSlide();
+                this.startY = null;
+            }
+        });
     },
 
     beforeDestroy() {
@@ -418,13 +495,30 @@ export default {
     },
 
     methods: {
+        prevSlide() {
+            this.slideIndex -= 1;
+
+            if (this.slideIndex < 0) {
+                this.slideIndex = 0;
+            }
+        },
+
+        nextSlide() {
+            this.slideIndex += 1;
+
+            if (this.slideIndex > this.$t('slides').length - 1) {
+                this.slideIndex = this.$t('slides').length - 1;
+            }
+        },
+
         utmFilter() {
             const slideNames = [
                 'table_dishwasher',
                 'time_saving',
                 'hygiene',
                 'new_life',
-                'water_saving'
+                'water_saving',
+                // здесь слайд по умолчанию №6
             ];
 
             const query = window.location.search;
@@ -432,7 +526,8 @@ export default {
             if (query.includes('utm_term')) {
                 slideNames.forEach((item, i) => {
                     if (query.includes(item)) {
-                        // меняем местами слайды, тот который запрашивает пользователь должен идти первым
+                        // меняем местами слайды, тот который запрашивает пользователь должен идти первым,
+                        // на его место ставится первый слайд, например 5,2,3,4,1,6 (поменяли 5 и 1 слайды)
                         let savedData = this.$t('slides')[0];
                         let removedData = this.$t('slides').splice(i, 1, savedData);
                         this.$t('slides').splice(0, 1, ...removedData);
@@ -443,6 +538,11 @@ export default {
             } else {
                 this.slideIndex = 5;
             }
+
+            // отключаем прелоадер
+            this.$nextTick(() => {
+                this.loaded = true;
+            });
         },
 
         updateDimensions() {
@@ -457,5 +557,101 @@ export default {
 </script>
 
 <style lang="scss">
+    .cookie-agreement {
+        position: fixed;
+        z-index: 9999;
+        top: 0;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 1vw 4.323vw;
+        background-color: rgba(0, 0, 0, 0.8);
 
+        &__container {
+            display: flex;
+            flex-direction: column;
+            width: 56vw;
+            padding: 3vw;
+            border-radius: 3vw;
+            background-color: #fff;
+
+            @media screen and (max-width: 750px) {
+                width: auto;
+                padding: 7vw 9vw;
+            }
+        }
+
+        &__text {
+            font-family: $Gilroy;
+            font-size: 1.7vw;
+            font-weight: 500;
+            text-align: center;
+            color: #303030;
+
+            a {
+                color: #303030;
+            }
+
+            @media screen and (max-width: 750px) {
+                font-size: 3.7vw;
+            }
+        }
+
+        &__buttons {
+            display: flex;
+            justify-content: center;
+            margin-top: 2vw;
+
+            @media screen and (max-width: 750px) {
+                flex-direction: column;
+                margin-top: 6vw;
+            }
+        }
+
+        &__okey,
+        &__nope {
+            display: block;
+            box-sizing: content-box;
+            height: 2.731vw;
+            padding: 1.056vw 2.425vw 0.122vw;
+            font-family: $Akzidenz;
+            font-size: 1.368vw;
+            font-weight: 300;
+            text-decoration: none;
+            text-align: center;
+            color: #fff;
+            border-radius: 2.799vw;
+            //background-color: transparent;
+            background: linear-gradient(45deg, #d21459 0%, #fb3c42 100%);
+            cursor: pointer;
+
+            @media screen and (max-width: 750px) {
+                height: 6vw;
+                padding: 3vw 5vw;
+                font-size: 4.368vw;
+                border-radius: 6.799vw;
+            }
+        }
+
+        &__nope {
+            color: #fb3c42;
+            border: 0.15vw solid #fb3c42;
+            background: none;
+            margin-left: 3vw;
+
+            @media screen and (max-width: 750px) {
+                margin-top: 3vw;
+                margin-left: 0;
+            }
+
+            &.active {
+                color: #fff;
+                border-color: transparent;
+                background: linear-gradient(45deg, #d21459 0%, #fb3c42 100%);
+            }
+        }
+    }
 </style>

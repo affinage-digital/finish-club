@@ -12,15 +12,22 @@ export default {
         ],
         link: [
             { rel: "shortcut icon", type: "image/png", href: "/favicon.png" },
+            { rel: "manifest", href: "/manifest.json" },
         ],
     },
     loading: {
         color: "#000"
     },
+    buildModules: [
+        '@nuxtjs/gtm',
+    ],
     modules: [
         "@nuxtjs/style-resources",
         "nuxt-i18n"
     ],
+    gtm: {
+        id: 'GTM-T6NPTLG'
+    },
     i18n: {
         locales: ["ru", "az"],
         defaultLocale: "ru",
