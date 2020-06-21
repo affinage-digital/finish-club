@@ -6,7 +6,7 @@
             <projector v-if="newIndex !== 0" :projector="content.projector" />
 
             <div class="slide-bg"></div>
-            <div class="slide-text-container">
+            <div class="slide-text-container" :class="{ 'is-ready': showAnimation }">
                 <div class="text-1" v-html="content.text_1"></div>
                 <div class="text-2" v-html="content.text_2"></div>
                 <div class="text-3" v-html="content.text_3"></div>
@@ -77,6 +77,10 @@ export default {
             type: Number,
             default: undefined,
         },
+        showAnimation: {
+            type: Boolean,
+            default: false,
+        }
     },
 
     i18n: {
@@ -125,28 +129,6 @@ export default {
         height: 100%;
     }
 
-    // .text-exit-active {
-    //   opacity: 0;
-    //   transition: $textTransitionDelay;
-    // }
-    .slide-bg-enter {
-        opacity: 0;
-    }
-
-    .slide-bg-enter-active {
-        opacity: 1;
-        transition: opacity 300ms;
-    }
-
-    .slide-bg-exit {
-        opacity: 1;
-    }
-
-    .slide-bg-exit-active {
-        opacity: 0;
-        transition: opacity 300ms;
-    }
-
     .agreement-doc {
         position: absolute;
         z-index: 9998;
@@ -165,7 +147,38 @@ export default {
         }
     }
 
-    $textTransitionDelay: left 1000ms, opacity 1000ms;
+    .slide {
+        .slide-text-container {
+            .text-1 {
+                opacity: 0;
+                transform: translate3d(-100%, 0, 0);
+                transition: opacity 1s $easeOutExpo, transform 1s $easeOutExpo;
+            }
+
+            .text-2 {
+                opacity: 0;
+                transform: translate3d(-100%, 0, 0);
+                transition: opacity 1s 0.15s $easeOutExpo, transform 1s 0.15s $easeOutExpo;
+            }
+
+            .text-3 {
+                opacity: 0;
+                transform: translate3d(-100%, 0, 0);
+                transition: opacity 1s 0.3s $easeOutExpo, transform 1s 0.3s $easeOutExpo;
+            }
+
+            &.is-ready {
+                .text-1,
+                .text-2,
+                .text-3 {
+                    opacity: 1;
+                    transform: none;
+                }
+            }
+        }
+    }
+
+    // $textTransitionDelay: left 1000ms, opacity 1000ms;
 
     .slide-1 {
         .agreement-doc {
@@ -1101,43 +1114,6 @@ export default {
 
         @media screen and (min-width: 1920px) {
             bottom: 3.789vw;
-        }
-    }
-
-    .text-enter {
-        opacity: 0 !important;
-    }
-
-    .text-enter-active {
-        opacity: 1 !important;
-        transition: $textTransitionDelay;
-    }
-
-    .text-exit {
-        opacity: 0 !important;
-    }
-
-    @media screen and (min-width: 750px) {
-        .text-enter {
-            left: 0 !important;
-        }
-
-        .text-1 {
-            &.text-enter-active {
-                left: 5.841vw !important;
-            }
-        }
-
-        .text-2 {
-            &.text-enter-active {
-                left: 14.614vw !important;
-            }
-        }
-
-        .text-3 {
-            &.text-enter-active {
-                left: 24.378vw !important;
-            }
         }
     }
 
